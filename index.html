@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Osmo 兼容性查询工具</title>
+<style>
+    body {
+        background-color: #f5f7fa;
+        font-family: 'Microsoft YaHei', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: #1e4f91;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: bold;
+        border-radius: 0 0 12px 12px;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+    }
+    .tabs {
+        display: flex;
+        background-color: white;
+        padding: 5px;
+        border-radius: 8px;
+        max-width: 1200px;
+        margin: 20px auto 0;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+    }
+    .tab {
+        padding: 12px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        margin-right: 5px;
+    }
+    .tab.active {
+        background-color: #1e4f91;
+        color: white;
+        font-weight: bold;
+    }
+    .content-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        max-width: 1200px;
+        margin: 20px auto;
+    }
+    label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+    }
+    select, input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+        outline: none;
+        transition: border 0.2s;
+    }
+
+.suggestion-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#modelSuggestionList {
+    position: absolute;
+    top: 38px;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 999;
+}
+    select:focus, input:focus {
+        border-color: #1e4f91;
+    }
+    button {
+        margin-top: 20px;
+        background-color: #1e4f91;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #163c6b;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        padding: 8px;
+        text-align: center;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+    }
+    th {
+        background-color: #f0f2f5;
+    }
+    tr.highlight {
+        background-color: #fef9c3;
+    }
+</style>
+</head>
+<body>
+
+<header>Osmo 兼容性查询工具</header>
+
+<!-- Tabs -->
+<div class="tabs">
+    <div class="tab active" data-tab="parts">配件兼容性</div>
+    <div class="tab" data-tab="charger">充电器兼容性</div>
+</div>
+
+<!-- Content: 配件兼容性 -->
+<div class="content-card tab-content" id="parts">
+    <label>选择产品：</label>
+    <select id="productSelect">
+        <option value="">请选择产品</option>
+        <option>Osmo Nano</option>
+        <option>Osmo 360</option>
+        <option>Osmo Action 5 Pro</option>
+        <option>Osmo Action 4</option>
+        <option>Osmo Action 3</option>
+        <option>DJI Action 2</option>
+        <option>Osmo Action 灵眸运动相机</option>
+    </select>
+
+    <label>选择配件：</label>
+<div style="position:relative;">
+  <input type="text" id="searchInput" placeholder="输入或选择配件名称">
+  <ul id="suggestionList" 
+      style="position:absolute;top:38px;left:0;width:100%;background:#fff;border:1px solid #d1d5db;
+             border-radius:6px;box-shadow:0 2px 5px rgba(0,0,0,0.1);list-style:none;margin:0;padding:0;
+             max-height:200px;overflow-y:auto;display:none;z-index:999;">
+  </ul>
+</div>
+
+    <button id="searchBtn">查询兼容性</button>
+
+    <table id="resultTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>配件名称</th>
+                <th>产品</th>
+                <th>兼容情况</th>
+                <th>备注</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Content: 其他 Tabs -->
+<div class="content-card tab-content" id="charger" style="display:none;">
+    <label>选择品牌：</label>
+    <select id="brandSelect">
+        <option value="">请选择品牌</option>
+    </select>
+
+    <label>选择类型：</label>
+    <select id="typeSelect">
+        <option value="">请选择类型</option>
+    </select>
+
+    <label>选择型号：</label>
+<div class="suggestion-wrapper">
+  <input type="text" id="modelInput" placeholder="输入或选择型号" autocomplete="off">
+  <ul id="modelSuggestionList"></ul>
+</div>
+
+    <button id="chargerSearchBtn">查询兼容性</button>
+
+    <table id="chargerResultTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>品牌</th>
+                <th>类型</th>
+                <th>型号</th>
+                <th>是否兼容</th>
+                <th>备注</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+const extraRemarks = {
+    "√1": "需要另外购买 Osmo 双向快拆折叠转接件。",
+    "√2": "需要另外购买 Osmo Action 快拆转接件。"
+};
+
+const partsData = [
+    // 数据结构：[配件名称, Osmo Nano, Nano备注, Osmo 360, 360备注, Osmo Action 5 Pro, Osmo Action 4, Osmo Action 3, DJI Action 2, Osmo Action 灵眸运动相机]const partsData = [
+    ["Osmo Action 多功能充电手柄","×","手柄上是单向快拆件","×","","√","√","×","×","×"],
+    ["Osmo Action 增广镜","×","","×","","√","√","×","×","×"],
+    ["Osmo Action 冷靴拓展套件","×","","×","","√","√","√","×","×"],
+    ["Osmo 头盔下巴固定夹","√1","","√2","","√","√","√","√","√"],
+    ["Osmo 柔性支架","√1","","×","","√","√","√","√","√"],
+    ["Osmo Action 耐寒增强续航电池 (1950 mAh)","×","","√","","√","√","√","×","×"],
+    ["Osmo Action 5 Pro 玻璃镜头保护盖","×","","×","","√","×","×","×","×"],
+    ["Osmo Action 迷你延长杆","×","延长杆上是单向快拆件","×","","√","√","√","×","×"],
+    ["Osmo Action 1.5 米延长杆套件","√1","","×","","√","√","√","√","√"],
+    ["Osmo Action 360° 腕带","×","","√","","√","√","√","×","×"],
+    ["Osmo Action 曲面粘接底座","√1","","√2","","√","√","√","√","√"],
+    ["Osmo Action 曲面粘接底座套件","√1","","√2","","√","√","√","√","√"],
+    ["Osmo Action 粘接底座套件","√1","","√2","","√","√","√","×","×"],
+    ["Osmo Action 快拆转接件","×","","√2","","√","√","√","×","×"],
+    ["Osmo Action 全能安装套装","×","","×","","√","√","√","√","√"],
+    ["Osmo 磁吸球头组件","×","球头上是单向快拆件","√","","√","√","√","√","×"],
+    ["Osmo 锁紧螺杆","√","","√","","√","√","√","√","√"],
+    ["Osmo 肩带支架","√1","","√2","","√","√","√","√","√"],
+    ["Osmo Action 挂脖支架","√1","","√2","","√","√","√","√","√"],
+    ["Osmo Action 迷你车把夹","×","球头上是单向快拆件","√","","√","√","√","×","×"],
+    ["Osmo Action 车把夹","√","","√2","","√","√","√","√","√"],
+    ["Osmo Action 车载吸盘","√","","√2","","√","√","√","√","√"],
+    ["Osmo Action 骑行胸带","√","","√2","","√","√","√","√","√"],
+    ["Osmo Action 头盔下巴配件","√","","√2","","√","√","√","√","√"],
+    ["Osmo Action 骑行配件套件","√","","√2","","√","√","√","√","√"],
+    ["Osmo Action 公路车配件套件","×","需购买双向快拆折叠转接件","√","","√","√","√","×","×"],
+    ["Osmo Action 车座支架","√1","","√2","","√","√","√","√","√"],
+    ["Osmo Action 冲浪保险贴","√","","√","","√","√","√","√","√"],
+    ["Osmo Action 冲浪保险贴套件","×","需购买双向快拆折叠转接件","√2","","√","√","√","×","×"],
+    ["Osmo Action 60 米防水壳","×","","×","","√","√","√","×","×"],
+    ["Osmo Action 潜水配件套件","×","","×","","√","√","√","×","×"],
+    ["DJI 漂浮手把","√","","×","","√","√","√","√","√"],
+    ["Osmo Action ND 镜套装","×","","×","","√","√","√","×","×"],
+    ["Osmo Action 4 玻璃镜头保护盖","×","","×","","×","√","×","×","×"],
+    ["Osmo Action 横竖拍保护框","×","","×","","√","√","√","×","×"],
+    ["Osmo Action GPS 蓝牙遥控器","×","发布时不兼容，后续兼容","√","","√","√","×","×","×"],
+    ["Osmo Action 3.5 毫米音频拓展配件","×","","×","","√","√","√","×","×"],
+    ["Osmo Action 耐寒长续航电池","×","","√","","√","√","√","×","×"],
+    ["Osmo Action 多功能电池收纳盒","×","","×","","×","√","√","×","×"],
+    ["Osmo Action 多功能电池收纳盒 2","×","","√","","√","√","√","×","×"],
+    ["Type-C to Type-C PD 快充线","√","","×","这个线是2.0，标配是3.1，怕用户买错所以写不兼容","√","√","√","√","√"],
+    ["DJI 30W USB-C 充电器","√","","√","","√","√","√","√","√"],
+    ["DJI Action 2 磁吸保护框","×","","×","","×","×","×","√","×"],
+    ["DJI Action 2 蓝牙遥控延长杆","×","","×","","×","×","×","√","×"],
+    ["DJI Action 2 防水壳","×","","×","","×","×","×","√","×"],
+    ["DJI Action 2 微距镜","×","","×","","×","×","×","√","×"],
+    ["DJI Action 2 磁吸头带","×","","×","","×","×","×","√","×"],
+    ["DJI Action 2 磁吸球头组件","×","","×","","√","√","√","√","×"],
+    ["Osmo Action 嘴咬式固定座","√","","√2","","√","√","√","√","√"],
+    ["Osmo 360 续航延长杆","×","","√","","×","×","×","×","×"],
+    ["Osmo 摩托车紧固支架","√","","√","","×","×","×","×","×"],
+    ["Osmo 可调节快拆转接件","×","","√","","×","×","×","×","×"],
+    ["Osmo 360 透明镜头保护镜","×","","√","","×","×","×","×","×"],
+    ["Osmo 挂脖支架 Max","√","","√2","也要搭配AC快拆件","√","√","√","√","√"],
+    ["Osmo 头盔第三视角套件","×","","√","","×","×","×","×","×"],
+    ["Osmo 70 厘米隐形自拍杆","√","","√","","×","×","×","×","×"],
+    ["Osmo 1 米高强度碳纤维隐形自拍杆","√","","√","","×","×","×","×","×"],
+    ["Osmo 1.2 米隐形自拍杆套件","√","","√","","×","×","×","×","×"],
+    ["Osmo 1.6 米三脚架自拍杆","√","","√","","×","×","×","×","×"],
+    ["Osmo 2.5 米超长碳纤维自拍杆","√","","√","","×","×","×","×","×"],
+    ["Osmo 双头紧固夹","√","","√","","√","√","√","√","√"],
+    ["Osmo 时空凝固旋转手柄","×","","√","","×","×","×","×","×"],
+    ["Osmo 自行车车尾套件","×","","√","","×","×","×","×","×"],
+    ["Osmo Action 耐寒增强续航电池（1950 mAh）","√","","×","","√","√","√","×","×"],
+    ["Osmo Action 电池","×","","×","","×","×","×","×","√"],
+    ["Osmo 360 收纳包","×","","√","","×","×","×","×","×"],
+    ["Osmo Action 漂浮块","×","","×","","√","√","√","×","×"],
+    ["DJI Action 2 磁吸球头组件","×","","×","","×","×","×","√","×"],
+    ["DJI Action 2 磁吸转接件","×","","×","","×","×","×","√","×"],
+    ["大疆迷你小背包","√","","√","","√","√","√","√","√"],
+    ["DJI 单肩小挎包","√","","√","","√","√","√","√","√"],
+    ["DJI 30W USB-C 充电器","√","","√","","√","√","√","×","×"],
+    ["CYNOVA Osmo Action 充电音频转接件","×","","×","","×","×","×","×","√"],
+    ["Osmo Action 遮光罩","×","","×","","√","√","×","×","×"],
+    ["Osmo Action 收纳包","×","","×","","√","√","√","×","×"],
+    ["Osmo Action 4 机身保护贴纸","×","","×","","√","√","√","×","×"],
+    ["Osmo 磁吸头带","√","","×","","×","×","×","×","×"],
+    ["Osmo 磁吸胸带","√","","×","","×","×","×","×","×"],
+    ["Osmo Nano ND 镜套装","√","","×","","×","×","×","×","×"],
+    ["Osmo Nano 玻璃镜头保护盖","√","","×","","×","×","×","×","×"],
+    ["Osmo Nano 双向磁吸球头组件","√","","×","","×","×","×","×","×"],
+    ["Osmo 双向快拆折叠转接件","√","","×","","×","×","×","×","×"]
+];
+
+
+
+document.getElementById('searchBtn').addEventListener('click',function(){
+    const product = document.getElementById('productSelect').value;
+    const partName = document.getElementById('searchInput').value;
+    const table = document.getElementById('resultTable');
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = "";
+
+    if(!product || !partName){
+        alert("请选择产品并输入配件名称");
+        return;
+    }
+
+    const match = partsData.find(row=> row[0]===partName);
+    if(match){
+        let compat = "";
+        let remark = "";
+        const headers = ["Osmo Nano","Nano备注","Osmo 360","360备注","Osmo Action 5 Pro","Osmo Action 4","Osmo Action 3","DJI Action 2","Osmo Action 灵眸运动相机"];
+        const prodIndex = headers.indexOf(product);
+if (prodIndex > -1) {
+    compat = match[prodIndex + 1]; // 因为第一列是名称
+    remark = ""; // 先清空
+    
+    // 先查额外备注映射表
+    if (extraRemarks[compat]) {
+        remark = extraRemarks[compat];
+    }
+    
+    // 再查当前产品对应的备注列：
+    const remarkIndex = prodIndex + 2; // 当前产品的备注列索引
+    if (match[remarkIndex]) {
+        // 避免重复追加
+        if (!remark.includes(match[remarkIndex])) {
+            remark += (remark ? " " : "") + match[remarkIndex];
+        }
+    }
+}
+
+        let tr = document.createElement('tr');
+        tr.classList.add("highlight");
+        tr.innerHTML = `<td>${partName}</td><td>${product}</td><td>${compat||"无数据"}</td><td>${remark||""}</td>`;
+        tbody.appendChild(tr);
+        table.style.display = "table";
+    } else {
+        alert("未找到该配件");
+        table.style.display = "none";
+    }
+});
+
+// 当配件查询里的产品选择变化时，自动清空配件名称输入框并隐藏结果表
+document.getElementById('productSelect').addEventListener('change', function(){
+    document.getElementById('searchInput').value = '';  // 清空配件输入框
+    document.getElementById('resultTable').style.display = 'none'; // 隐藏配件结果表
+});
+
+/* ======== 充电器兼容性数据 ======== */
+const chargerData = [
+    { brand:"DJI", type:"DJI充电器", model:"DJI-100W", compatible:"√", remark:"" },
+    { brand:"DJI", type:"DJI充电器", model:"PD-65CN-BYD", compatible:"√", remark:"" },
+    { brand:"DJI", type:"DJI充电器", model:"PC-30CN", compatible:"√", remark:"" },
+    { brand:"DJI", type:"DJI充电器", model:"QC24-CN", compatible:"√", remark:"" },
+    { brand:"DJI", type:"DJI充电器", model:"QC18-US", compatible:"√", remark:"" },
+    { brand:"DJI", type:"DJI充电器", model:"QC18-CN", compatible:"√", remark:"" },
+    { brand:"DJI", type:"户外电源", model:"DY301", compatible:"√", remark:"" },
+    { brand:"DJI", type:"户外电源", model:"DY201", compatible:"√", remark:"" },
+    { brand:"Apple", type:"手机充电器", model:"A2244", compatible:"√", remark:"" },
+    { brand:"Apple", type:"笔记本电脑电源适配器", model:"A2452", compatible:"√", remark:"" },
+    { brand:"Apple", type:"笔记本电脑电源适配器", model:"A1947", compatible:"√", remark:"" },
+    { brand:"华为", type:"手机充电器", model:"HW-200500C00", compatible:"×", remark:"无法充电" },
+    { brand:"华为", type:"手机充电器", model:"HW-200440C00", compatible:"√", remark:"" },
+    { brand:"华为", type:"手机充电器", model:"P0009", compatible:"×", remark:"无法充电" },
+    { brand:"华为", type:"手机充电器", model:"HW-200200CP1", compatible:"√", remark:"" },
+    { brand:"华为", type:"手机充电器", model:"HW-100400C01", compatible:"√", remark:"" },
+    { brand:"华为", type:"手机充电器", model:"HW-059200CHQ", compatible:"√", remark:"" },
+    { brand:"华为", type:"手机充电器", model:"P0003", compatible:"√", remark:"" },
+    { brand:"华为", type:"手机充电器", model:"P0005", compatible:"√", remark:"" },
+    { brand:"华为", type:"笔记本电脑电源适配器", model:"HW-200450CP0", compatible:"√", remark:"" },
+    { brand:"华为", type:"移动电源", model:"P0008", compatible:"X", remark:"" },
+    { brand:"华为", type:"移动电源", model:"P0001", compatible:"√", remark:"" },
+    { brand:"三星", type:"手机充电器", model:"EP-T6530", compatible:"√", remark:"" },
+    { brand:"三星", type:"手机充电器", model:"EP-TA845", compatible:"√", remark:"" },
+    { brand:"三星", type:"手机充电器", model:"EP-TA800", compatible:"×", remark:"无法充电" },
+    { brand:"OPPO", type:"手机充电器", model:"VCBAUACH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VCBAJACH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VCB8HBCH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VCB8JACH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VCB7CACH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VCA7JCCH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VCA5JACH", compatible:"√", remark:"" },
+    { brand:"OPPO", type:"手机充电器", model:"VC56HBCH", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V12060L0B0-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V200100LB0B0-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V8060L0A2-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V6660L0B0-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V5550L0A0-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V3030A-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"V3330L0A0-CN", compatible:"√", remark:"" },
+    { brand:"Vivo", type:"手机充电器", model:"BK-T-01Q", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"MDY-14-EU", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"MDY-13-ET", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"A07ZM", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"AD651P", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"AD652G", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"MDY-11-EX", compatible:"√", remark:"" },
+    { brand:"小米", type:"手机充电器", model:"MDY-10-EH", compatible:"√", remark:"" },
+    { brand:"小米", type:"移动电源", model:"PB1022ZM", compatible:"√", remark:"" },
+    { brand:"小米", type:"移动电源", model:"PB100DZM", compatible:"√", remark:"" },
+    { brand:"一加", type:"手机充电器", model:"VCK8HACH", compatible:"√", remark:"" },
+    { brand:"一加", type:"手机充电器", model:"WC065A11JH", compatible:"√", remark:"" },
+    { brand:"荣耀", type:"手机充电器", model:"HN-200675CP0", compatible:"√", remark:"" },
+    { brand:"荣耀", type:"手机充电器", model:"HN-200500C01", compatible:"√", remark:"" },
+    { brand:"荣耀", type:"手机充电器", model:"HN-200500CP0", compatible:"√", remark:"" },
+    { brand:"荣耀", type:"手机充电器", model:"HN-110600C02", compatible:"√", remark:"" },
+    { brand:"荣耀", type:"手机充电器", model:"HN-110600CP0", compatible:"√", remark:"" },
+    { brand:"荣耀", type:"手机充电器", model:"HW-100225C00", compatible:"√", remark:"" },
+    { brand:"努比亚", type:"手机充电器", model:"PA0202", compatible:"√", remark:"" },
+    { brand:"努比亚", type:"手机充电器", model:"NB-A1150A-USBA-C", compatible:"√", remark:"" },
+    { brand:"努比亚", type:"手机充电器", model:"NB-A930A-USB-1", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD226", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD270  100W智充魔盒", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD271", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD289", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD275", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD127", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD137", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD327", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD244", compatible:"√", remark:"需通过USB-C口" },
+    { brand:"绿联", type:"手机充电器", model:"CD261", compatible:"√", remark:"" },
+    { brand:"绿联", type:"手机充电器", model:"CD344", compatible:"√", remark:"需通过USB-C口" },
+    { brand:"安克", type:"手机充电器", model:"A2148", compatible:"X", remark:"" },
+    { brand:"安克", type:"手机充电器", model:"A2678", compatible:"√", remark:"" },
+    { brand:"安克", type:"手机充电器", model:"A2332", compatible:"√", remark:"" },
+    { brand:"安克", type:"移动电源", model:"A1287", compatible:"√", remark:"" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN130CC", compatible:"√", remark:"" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN120C", compatible:"√", remark:"需通过USB-C口" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN100UC", compatible:"√", remark:"需通过USB-C口" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN67CC3", compatible:"√", remark:"" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN160CC", compatible:"√", remark:"" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN65C5", compatible:"√", remark:"" },
+    { brand:"倍思", type:"手机充电器", model:"BS-CH907", compatible:"X", remark:"概率性无法充电" },
+    { brand:"倍思", type:"手机充电器", model:"CCXFK20C", compatible:"√", remark:"" },
+    { brand:"倍思", type:"手机充电器", model:"CCGAN100-2ACC", compatible:"√", remark:"" },
+    { brand:"倍思", type:"移动电源", model:"PPADM2-10", compatible:"√", remark:"" },
+    { brand:"品胜", type:"手机充电器", model:"TS-C146", compatible:"√", remark:"需通过USB-C口" },
+    { brand:"品胜", type:"手机充电器", model:"TS-C137", compatible:"√", remark:"" },
+    { brand:"品胜", type:"手机充电器", model:"RY01520W1C1AC", compatible:"√", remark:"" },
+    { brand:"品胜", type:"手机充电器", model:"TS-C148", compatible:"√", remark:"需通过USB-C口" },
+    { brand:"品胜", type:"手机充电器", model:"KF24", compatible:"√", remark:"" },
+    { brand:"品胜", type:"手机充电器", model:"KF25", compatible:"√", remark:"" },
+    { brand:"品胜", type:"移动电源", model:"LS-DY221", compatible:"√", remark:"需使用USB-C接口充电" },
+    { brand:"罗马仕", type:"手机充电器", model:"AC20C", compatible:"√", remark:"" },
+    { brand:"罗马仕", type:"移动电源", model:"PPH80-611", compatible:"√", remark:"" },
+    { brand:"罗马仕", type:"移动电源", model:"PAC20-392", compatible:"√", remark:"" },
+    { brand:"联想", type:"笔记本电脑电源适配器", model:"YG130G", compatible:"√", remark:"" },
+    { brand:"联想", type:"笔记本电脑电源适配器", model:"ADL100YLC3A", compatible:"√", remark:"" },
+    { brand:"联想", type:"笔记本电脑电源适配器", model:"ADLX65YLC3D", compatible:"√", remark:"" },
+    { brand:"戴尔", type:"笔记本电脑电源适配器", model:"DA130PM200", compatible:"√", remark:"" },
+    { brand:"戴尔", type:"笔记本电脑电源适配器", model:"LA65NM190", compatible:"√", remark:"" },
+    { brand:"戴尔", type:"笔记本电脑电源适配器", model:"T-20000065", compatible:"√", remark:"" },
+    { brand:"惠普", type:"笔记本电脑电源适配器", model:"TPN-DA20", compatible:"√", remark:"" },
+    { brand:"惠普", type:"笔记本电脑电源适配器", model:"TPN-LA22", compatible:"√", remark:"" },
+    { brand:"飞利浦", type:"移动电源", model:"DLP2113U/93", compatible:"√", remark:"" },
+    { brand:"优者", type:"移动电源", model:"小方充电宝", compatible:"√", remark:"" },
+    { brand:"华芯飞", type:"移动电源", model:"DX467", compatible:"√", remark:"" },
+    { brand:"绿联", type:"移动电源", model:"PB205", compatible:"√", remark:"" },
+    { brand:"倍思", type:"移动电源", model:"PPJL65C", compatible:"√", remark:"" },
+    { brand:"品胜", type:"移动电源", model:"LS-DY100", compatible:"√", remark:"" }
+];
+
+
+const brandSelect = document.getElementById('brandSelect');
+const typeSelect = document.getElementById('typeSelect');
+const modelInput = document.getElementById('modelInput');
+const modelSuggestionList = document.getElementById('modelSuggestionList');
+
+const brands = [...new Set(chargerData.map(c => c.brand).filter(b => b))];
+brands.forEach(b => {
+    let opt = document.createElement('option');
+    opt.value = b;
+    opt.textContent = b;
+    brandSelect.appendChild(opt);
+});
+
+
+brandSelect.addEventListener('change', function(){
+    typeSelect.innerHTML = '<option value="">请选择类型</option>';
+
+    // 🔹 新增：自动清空型号输入框
+    modelInput.value = '';
+    // 🔹 新增：隐藏充电器结果表
+    document.getElementById('chargerResultTable').style.display = 'none';
+
+    if (!this.value) return;
+    const types = [...new Set(chargerData.filter(c => c.brand === this.value).map(c => c.type))];
+    types.forEach(t => {
+        let opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        typeSelect.appendChild(opt);
+    });
+});
+
+
+typeSelect.addEventListener('change', function(){
+    // 🔹 新增：自动清空型号和隐藏结果表
+    modelInput.value = '';
+    document.getElementById('chargerResultTable').style.display = 'none';
+    
+    showModelSuggestions('');
+});
+
+
+function showModelSuggestions(keyword) {
+    modelSuggestionList.innerHTML = '';
+    const kwRaw = keyword.trim().toLowerCase().replace(/　/g, ' ');
+    if (!typeSelect.value || !brandSelect.value) {
+        modelSuggestionList.style.display = 'none';
+        return;
+    }
+
+    let matches;
+
+    if (!kwRaw) {
+        matches = chargerData.filter(c => 
+            c.brand === brandSelect.value &&
+            c.type === typeSelect.value
+        );
+    } else {
+        // 关键词分词
+        const keywords = kwRaw.split(/\s+/).filter(k => k);
+
+
+        matches = chargerData.filter(c =>
+            c.brand === brandSelect.value &&
+            c.type === typeSelect.value &&
+            keywords.every(k => c.model.toLowerCase().includes(k))
+        );
+
+
+        if (matches.length === 0) {
+            const fuzzyPattern = kwRaw.split('').map(ch => escapeRegExp(ch)).join('.*');
+            const regex = new RegExp(fuzzyPattern, 'i');
+            matches = chargerData.filter(c =>
+                c.brand === brandSelect.value &&
+                c.type === typeSelect.value &&
+                regex.test(c.model)
+            );
+        }
+    }
+
+    if (matches.length === 0) {
+        modelSuggestionList.style.display = 'none';
+        return;
+    }
+
+    matches.forEach(match => {
+        const li = document.createElement('li');
+        li.textContent = match.model;
+        li.style.padding = '8px 10px';
+        li.style.cursor = 'pointer';
+        li.addEventListener('mouseenter', () => li.style.background = '#f0f2f5');
+        li.addEventListener('mouseleave', () => li.style.background = 'transparent');
+        li.addEventListener('click', () => {
+            modelInput.value = match.model;
+            modelSuggestionList.style.display = 'none';
+        });
+        modelSuggestionList.appendChild(li);
+    });
+    modelSuggestionList.style.display = 'block';
+}
+
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+modelInput.addEventListener('input', function(){
+    showModelSuggestions(this.value);
+});
+
+
+modelInput.addEventListener('focus', function(){
+    showModelSuggestions(this.value);
+});
+
+document.addEventListener('click', function(e){
+    if (!modelInput.contains(e.target) && !modelSuggestionList.contains(e.target)) {
+        modelSuggestionList.style.display = 'none';
+    }
+});
+
+
+document.getElementById('chargerSearchBtn').addEventListener('click', function(){
+    const b = brandSelect.value;
+    const t = typeSelect.value;
+    const m = modelInput.value.trim();
+    const resTable = document.getElementById('chargerResultTable');
+    const tbody = resTable.querySelector('tbody');
+    tbody.innerHTML = '';
+    if (!b || !t || !m) {
+        alert('请完整选择品牌、类型并输入型号');
+        return;
+    }
+    const match = chargerData.find(c => c.brand === b && c.type === t && c.model === m);
+    if (!match) {
+        alert('未找到匹配的型号');
+        resTable.style.display = 'none';
+        return;
+    }
+    let tr = document.createElement('tr');
+    tr.innerHTML = `<td>${match.brand}</td><td>${match.type}</td><td>${match.model}</td>
+                    <td>${match.compatible}</td><td>${match.remark || ''}</td>`;
+    tbody.appendChild(tr);
+    resTable.style.display = 'table';
+});
+
+
+
+const searchInput = document.getElementById('searchInput');
+const suggestionList = document.getElementById('suggestionList');
+
+function showSuggestions(keyword) {
+    suggestionList.innerHTML = '';
+
+    const kwRaw = keyword.trim().toLowerCase().replace(/　/g, ' ');
+
+    if (!kwRaw) {
+
+        renderList(partsData);
+        return;
+    }
+
+    const nameList = partsData.map(p => p[0]);
+
+
+    let matches = partsData.filter(item =>
+        item[0].toLowerCase().includes(kwRaw)
+    );
+
+    if (matches.length === 0) {
+        const keywords = kwRaw.split(/\s+/).filter(k => k);
+        matches = partsData.filter(item =>
+            keywords.every(k => item[0].toLowerCase().includes(k))
+        );
+    }
+
+
+    if (matches.length === 0) {
+
+        const fuzzyPattern = kwRaw.split('').map(c => escapeRegExp(c)).join('.*');
+        const regex = new RegExp(fuzzyPattern, 'i'); // i 忽略大小写
+        matches = partsData.filter(item => regex.test(item[0]));
+    }
+
+    if (matches.length === 0) {
+        suggestionList.style.display = 'none';
+        return;
+    }
+
+    renderList(matches);
+}
+
+
+function renderList(matches) {
+    suggestionList.innerHTML = '';
+    matches.forEach(match => {
+        const li = document.createElement('li');
+        li.textContent = match[0];
+        li.style.padding = '8px 10px';
+        li.style.cursor = 'pointer';
+        li.addEventListener('mouseenter', () => li.style.background = '#f0f2f5');
+        li.addEventListener('mouseleave', () => li.style.background = 'transparent');
+        li.addEventListener('click', () => {
+            searchInput.value = match[0];
+            suggestionList.style.display = 'none';
+        });
+        suggestionList.appendChild(li);
+    });
+    suggestionList.style.display = 'block';
+}
+
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+searchInput.addEventListener('input', function () {
+    showSuggestions(this.value);
+});
+
+
+searchInput.addEventListener('focus', function () {
+    showSuggestions(this.value);
+});
+
+
+document.addEventListener('click', function (e) {
+    if (!searchInput.contains(e.target) && !suggestionList.contains(e.target)) {
+        suggestionList.style.display = 'none';
+    }
+});
+
+
+document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',function(){
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+        document.getElementById(this.dataset.tab).style.display='block';
+    });
+});
+</script>
+
+</body>
+</html>
